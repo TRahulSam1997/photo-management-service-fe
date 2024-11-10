@@ -22,31 +22,13 @@ export const SnapshotList = () => {
     );
   }
 
-  const pendingSnapshots = snapshots.filter(
-    (s) => s.status === SnapshotStatus.Pending
-  );
-  const otherSnapshots = snapshots.filter(
-    (s) => s.status !== SnapshotStatus.Pending
-  );
-
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-8">
-      {pendingSnapshots.length > 0 && (
+      {snapshots.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold mb-4">Pending Review</h2>
+          <h2 className="text-xl font-bold mb-4">Your Photos</h2>
           <div className="space-y-4">
-            {pendingSnapshots.map((snapshot) => (
-              <SnapshotItem key={snapshot.id} snapshot={snapshot} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {otherSnapshots.length > 0 && (
-        <section>
-          <h2 className="text-xl font-bold mb-4">Previous Snapshots</h2>
-          <div className="space-y-4">
-            {otherSnapshots.map((snapshot) => (
+            {snapshots.map((snapshot) => (
               <SnapshotItem key={snapshot.id} snapshot={snapshot} />
             ))}
           </div>

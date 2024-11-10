@@ -1,30 +1,15 @@
 import React from "react";
 import { Snapshot, SnapshotStatus } from "../types/snapshot";
 import { useSnapshots } from "../hooks/useSnapshot";
+import { API_BASE_URL, STATUS_COLORS } from "../utils/constants";
+import { snapshotApi } from "../services/api";
 
 interface SnapshotItemProps {
   snapshot: Snapshot;
 }
 
 export const SnapshotItem: React.FC<SnapshotItemProps> = ({ snapshot }) => {
-  const { updateStatus, deleteSnapshot, isUpdating, isDeleting } =
-    useSnapshots();
-
-  const handleStatusUpdate = async (status: SnapshotStatus) => {
-    try {
-      await updateStatus({
-        id: snapshot.id,
-        status,
-        feedback:
-          status === SnapshotStatus.Rejected
-            ? "Photos do not meet requirements"
-            : undefined,
-      });
-    } catch (error) {
-      console.error("Failed to update status:", error);
-      alert("Failed to update status");
-    }
-  };
+  const { deleteSnapshot, isDeleting } = useSnapshots();
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this snapshot?")) {
@@ -39,6 +24,7 @@ export const SnapshotItem: React.FC<SnapshotItemProps> = ({ snapshot }) => {
 
   return (
     <div className="border rounded-lg p-4 space-y-4">
+      {/* Status and Delete section */}
       <div className="flex justify-between items-start">
         <div>
           <p className="font-medium">
@@ -47,10 +33,10 @@ export const SnapshotItem: React.FC<SnapshotItemProps> = ({ snapshot }) => {
           <p
             className={`text-sm ${
               snapshot.status === SnapshotStatus.Approved
-                ? "text-green-600"
+                ? STATUS_COLORS.approved
                 : snapshot.status === SnapshotStatus.Rejected
-                ? "text-red-600"
-                : "text-yellow-600"
+                ? STATUS_COLORS.rejected
+                : STATUS_COLORS.pending
             }`}
           >
             Status: {snapshot.status}
@@ -71,45 +57,33 @@ export const SnapshotItem: React.FC<SnapshotItemProps> = ({ snapshot }) => {
         </button>
       </div>
 
+      {/* Photos section */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-sm font-medium mb-1">Front View</p>
           <img
-            src={`http://localhost:3000/${snapshot.frontPhoto}`}
+            src={snapshotApi.getImageUrl(snapshot.frontPhoto)}
             alt="Front view"
             className="w-full h-48 object-cover rounded-lg"
+            onError={(e) => {
+              console.error("Failed to load image:", snapshot.frontPhoto);
+              e.currentTarget.src = "/placeholder-image.png"; // Optional: show placeholder on error
+            }}
           />
         </div>
         <div>
           <p className="text-sm font-medium mb-1">Top View</p>
           <img
-            src={`http://localhost:3000/${snapshot.topPhoto}`}
+            src={snapshotApi.getImageUrl(snapshot.topPhoto)}
             alt="Top view"
             className="w-full h-48 object-cover rounded-lg"
+            onError={(e) => {
+              console.error("Failed to load image:", snapshot.topPhoto);
+              e.currentTarget.src = "/placeholder-image.png"; // Optional: show placeholder on error
+            }}
           />
         </div>
       </div>
-
-      {/* {snapshot.status === SnapshotStatus.Pending && (
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleStatusUpdate(SnapshotStatus.Approved)}
-            disabled={isUpdating}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg
-                     hover:bg-green-600 disabled:bg-gray-300"
-          >
-            Approve
-          </button>
-          <button
-            onClick={() => handleStatusUpdate(SnapshotStatus.Rejected)}
-            disabled={isUpdating}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg
-                     hover:bg-red-600 disabled:bg-gray-300"
-          >
-            Reject
-          </button>
-        </div>
-      )} */}
     </div>
   );
 };

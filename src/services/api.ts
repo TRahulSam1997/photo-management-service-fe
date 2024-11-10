@@ -1,15 +1,14 @@
 import axios from "axios";
 import { Snapshot, CreateSnapshotDTO, SnapshotStatus } from "../types/snapshot";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+import { API_BASE_URL, API_ENDPOINTS } from "../utils/constants";
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
 });
 
 export const snapshotApi = {
   getAll: async (): Promise<Snapshot[]> => {
-    const { data } = await api.get<Snapshot[]>("/snapshots");
+    const { data } = await api.get<Snapshot[]>(API_ENDPOINTS.SNAPSHOTS);
     return data.map((snapshot) => ({
       ...snapshot,
       createdAt: new Date(snapshot.createdAt),
@@ -21,11 +20,15 @@ export const snapshotApi = {
     formData.append("frontPhoto", dto.frontPhoto);
     formData.append("topPhoto", dto.topPhoto);
 
-    const { data } = await api.post<Snapshot>("/snapshots", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const { data } = await api.post<Snapshot>(
+      API_ENDPOINTS.SNAPSHOTS,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return {
       ...data,
@@ -38,10 +41,13 @@ export const snapshotApi = {
     status: SnapshotStatus,
     feedback?: string
   ): Promise<Snapshot> => {
-    const { data } = await api.patch<Snapshot>(`/snapshots/${id}/status`, {
-      status,
-      feedback,
-    });
+    const { data } = await api.patch<Snapshot>(
+      `${API_ENDPOINTS.SNAPSHOTS}/${id}/status`,
+      {
+        status,
+        feedback,
+      }
+    );
 
     return {
       ...data,
@@ -50,6 +56,11 @@ export const snapshotApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    await api.delete(`/snapshots/${id}`);
+    await api.delete(`${API_ENDPOINTS.SNAPSHOTS}/${id}`);
+  },
+
+  // Utility method to get full URL for images
+  getImageUrl: (imageName: string): string => {
+    return `${API_BASE_URL}/${imageName}`;
   },
 };
